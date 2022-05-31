@@ -1,0 +1,29 @@
+SELECT DISTINCT DB_EDIP_LOTE,
+       
+                DB_PED_NRO,
+                
+                DB_NOTA_NRO,
+                
+                DATA_INCLUSAO,
+                
+                DATA_ATUALIZACAO,
+                
+                (SELECT A.DB_NOTA_DT_ENVIO
+                   FROM DB_NOTA_FISCAL A
+                  WHERE A.DB_NOTA_PED_ORIG = DB_PED_NRO_ORIG) "DATA_RETORNO",
+                
+                (SELECT B.DB_EDILE_ARQUIVO
+                   FROM DB_EDI_LOG_EXP B
+                  WHERE B.DB_EDILE_EDIP_NRO = DB_EDIP_NRO
+                    AND B.DB_EDILE_EDIP_COMP = DB_EDIP_COMPRADOR
+                    AND B.DB_EDILE_EDIA_CODI NOT LIKE '%RET'
+                    AND B.DB_EDILE_EDIA_CODI NOT LIKE '%PED'
+                    AND B.DB_EDILE_EDIA_CODI NOT LIKE '%COT') "NOME_ARQUIVO_RETORNO"
+
+  FROM INTERFACE_DB_NOTA_FISCAL, DB_PEDIDO, DB_PEDIDO_PROD, DB_EDI_PEDIDO
+ WHERE DB_PED_NRO_ORIG = DB_NOTA_PED_ORIG(+)
+   AND DB_PED_NRO = DB_PEDI_PEDIDO
+   AND DB_EDIP_PEDMERC = DB_PED_NRO
+   AND DB_PEDI_QTDE_ATEND > 0
+   AND DB_EDIP_LOTE IN --(83934)
+      (83963, 83964, 83965, 83966, 83967, 83968, 83969, 83970, 83971)

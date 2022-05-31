@@ -1,0 +1,36 @@
+SELECT IBLITM,
+       (SUM(LIPQOH - (LIPCOM + LIHCOM))) - MAX(IBSAFE) DISPONIBILIDADE,
+       ABALPH,
+       IVCITM
+  from QADTA.F0101,
+       QADTA.F4101,
+       QADTA.F4104,
+       (select *
+          from qadta.f4102, qadta.f41021
+         where IBLITM in (SELECT IMLITM
+                            FROM qaDTA.F4101, qadta.F0101
+                           WHERE IMANPL = ABAN8
+                             AND IMITM = IBITM
+                             AND ABALPH LIKE ('%EMS%')) -- DIGITE PARTE DO NOME DO LABORATORIO
+           and trim(ibmcu) = 'DIFARCAT'
+           and liitm = ibitm
+           and lilocn NOT IN ('ENTRADA', 'VENCIDO', 'DEVOL')
+           and ibstkt != 'O'
+        union
+        SELECT *
+          from qadta.f4102, qadta.f41021
+         where IBLITM in (SELECT IMLITM
+                            FROM qaDTA.F4101, qadta.F0101
+                           WHERE IMANPL = ABAN8
+                             AND IMITM = IBITM
+                             AND ABALPH LIKE ('%EMS%')) -- DIGITE PARTE DO NOME DO LABORATORIO 
+           and trim(ibmcu) = 'DIFARCAT'
+           and liitm = ibitm
+           and lilocn = 'ENTRADA'
+           and ibstkt != 'O'
+           and lilotn = ' ')
+ WHERE IMANPL = ABAN8
+   AND IMITM = IBITM
+   AND IMLITM = IVLITM
+   AND IVXRT = 'VN'
+ GROUP BY IBLITM, ABALPH, IVCITM

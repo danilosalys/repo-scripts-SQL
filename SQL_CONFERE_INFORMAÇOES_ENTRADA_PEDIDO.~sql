@@ -1,0 +1,26 @@
+   
+ SELECT 
+        A.DB_EDIP_LOTE                  "Nº LOTE",
+        A.DB_EDIP_PEDMERC               "Nº PEDIDO MERCANET",
+        A.DB_EDIP_NRO                   "NºPEDIDO LABORATORIO",
+        A.DB_EDIP_COMPRADOR             "CODIGO DO CLIENTE",
+        A.DB_EDIP_DT_EMISSAO            "DATA DE EMISSAO",
+        A.DB_EDIP_EMPRESA               "CODIGO FILIAL DE VENDA",
+        A.DB_EDIP_CLIENTE               "CNPJ FILIAL DE VENDA",
+        A.DB_EDIP_ORDCOMPRA             "ORDEM DE COMPRA",
+        A.DB_EDIP_TIPO_FRE              "TIPO DE FATURAMENTO",
+        A.DB_EDIP_FORMAPGTO             "FORMA DE PAGTO",
+        A.DB_EDIP_CONDPGTO              "QTD DIAS COND. PAGTO",
+        A.DB_EDIP_PRZPAGTO              "PRAZO DE PAGTO ARQ" ,
+        A.DB_EDIP_VAN                   "CODIGO DA VAN",
+        A.DB_EDIP_LABCOD                "CODIGO LAB NO MERCANET",
+        A.DB_EDIP_LAB                   "CODIGO DE CONTROLE LAB",
+        A.DB_EDIP_PROJETO               "CODIGO DO PROJETO LAB" ,
+        B.DB_EDILD_DATA                 "DATA DA IMPORTAÇÃO ARQ",
+        A.DB_EDIP_DTENVIO               "DATA DE RETORNO ARQ P/ VAN",
+        DB_EDILD_NOMEARQ                "NOME DO ARQUIVO IMPORTADO"                          
+     FROM MERCANET_HML.DB_EDI_PEDIDO A, MERCANET_HML.DB_EDI_LOTE_DISTR B
+ WHERE A.DB_EDIP_LOTE = B.DB_EDILD_SEQ
+ AND B.DB_EDILD_DATA > TO_DATE('08/10/2012 00:00:00', 'DD/MM/YYYY HH24:MI:SS') 
+ --AND A.DB_EDIP_PROJETO = '50'
+ 

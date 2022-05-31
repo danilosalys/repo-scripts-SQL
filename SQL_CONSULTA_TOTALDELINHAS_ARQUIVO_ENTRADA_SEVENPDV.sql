@@ -1,0 +1,145 @@
+SELECT DISTINCT EPD.DB_EDIP_LOTE,
+                
+                ELD.DB_EDILD_NOMEARQ,
+                
+                (SELECT MAX(TO_NUMBER(SUBSTR(DB_EDILD_NOMEARQ, 39, 6)))
+                   FROM mercanet_prd.DB_EDI_LOTE_DISTR EDILD
+                  WHERE EDILD.DB_EDILD_SEQ = EPD.DB_EDIP_LOTE) "TOTAL LINHAS DO ARQUIVO",
+                
+                (SELECT distinct (COUNT(*))
+                   FROM mercanet_prd.DB_EDI_PEDIDO  EDIP,
+                        mercanet_prd.DB_EDI_PEDPROD EDII
+                  WHERE EDIP.DB_EDIP_COMPRADOR = EDII.DB_EDII_COMPRADOR
+                    AND EDIP.DB_EDIP_NRO = EDII.DB_EDII_NRO
+                    AND EDIP.DB_EDIP_LOTE = EPD.DB_EDIP_LOTE
+                       --AND EDIP.DB_EDIP_DTENVIO is null
+                    AND NOT EXISTS
+                  (SELECT *
+                           FROM mercanet_prd.DB_EDI_PEDIDO EDIP2
+                          WHERE EDIP.DB_EDIP_DTENVIO =
+                                TO_DATE('31/12/9999 00:00:00',
+                                        'DD/MM/YYYY HH24:MI:SS'))) "TOTAL CONSISTIDO(LINHAS)",
+                                        
+                (SELECT MAX(TO_NUMBER(SUBSTR(DB_EDILD_NOMEARQ, 39, 6)))
+                   FROM mercanet_prd.DB_EDI_LOTE_DISTR EDILD
+                  WHERE EDILD.DB_EDILD_SEQ = EPD.DB_EDIP_LOTE)-
+                (SELECT distinct (COUNT(*))
+                   FROM mercanet_prd.DB_EDI_PEDIDO  EDIP,
+                        mercanet_prd.DB_EDI_PEDPROD EDII
+                  WHERE EDIP.DB_EDIP_COMPRADOR = EDII.DB_EDII_COMPRADOR
+                    AND EDIP.DB_EDIP_NRO = EDII.DB_EDII_NRO
+                    AND EDIP.DB_EDIP_LOTE = EPD.DB_EDIP_LOTE
+                       --AND EDIP.DB_EDIP_DTENVIO is null
+                    AND NOT EXISTS
+                  (SELECT *
+                           FROM mercanet_prd.DB_EDI_PEDIDO EDIP2
+                          WHERE EDIP.DB_EDIP_DTENVIO =
+                                TO_DATE('31/12/9999 00:00:00',
+                                        'DD/MM/YYYY HH24:MI:SS')))            
+                
+                /*(SELECT (COUNT(*))
+                   FROM mercanet_prd.DB_EDI_PEDIDO  EDIP,
+                        mercanet_prd.DB_EDI_PEDPROD EDII
+                  WHERE EDIP.DB_EDIP_COMPRADOR = EDII.DB_EDII_COMPRADOR
+                    AND EDIP.DB_EDIP_NRO = EDII.DB_EDII_NRO
+                    AND EDIP.DB_EDIP_LOTE = EPD.DB_EDIP_LOTE
+                    AND EDIP.DB_EDIP_DTENVIO =
+                        TO_DATE('31/12/9999 00:00:00',
+                                'DD/MM/YYYY HH24:MI:SS'))*/ "FALTA CONSISTIR (LINHAS)",
+                
+                (SELECT COUNT(EDIP.DB_EDIP_NRO)
+                   FROM mercanet_prd.DB_EDI_PEDIDO EDIP
+                  WHERE EDIP.DB_EDIP_LOTE = EPD.DB_EDIP_LOTE
+                       --AND EDIP.DB_EDIP_DTENVIO IS NULL
+                    AND NOT EXISTS
+                  (SELECT *
+                           FROM mercanet_prd.DB_EDI_PEDIDO EDIP2
+                          WHERE EDIP.DB_EDIP_DTENVIO =
+                                TO_DATE('31/12/9999 00:00:00',
+                                        'DD/MM/YYYY HH24:MI:SS'))) "SEQ DE PEDIDOS GERADOS",
+                
+                (SELECT CASE
+                          WHEN ((SELECT distinct (COUNT(*))
+                                   FROM mercanet_prd.DB_EDI_PEDIDO  EDIP,
+                                        mercanet_prd.DB_EDI_PEDPROD EDII
+                                  WHERE EDIP.DB_EDIP_COMPRADOR =
+                                        EDII.DB_EDII_COMPRADOR
+                                    AND EDIP.DB_EDIP_NRO = EDII.DB_EDII_NRO
+                                    AND EDIP.DB_EDIP_LOTE = EPD.DB_EDIP_LOTE
+                                       --AND EDIP.DB_EDIP_DTENVIO is null
+                                    AND NOT EXISTS
+                                  (SELECT *
+                                           FROM mercanet_prd.DB_EDI_PEDIDO EDIP2
+                                          WHERE EDIP.DB_EDIP_DTENVIO =
+                                                TO_DATE('31/12/9999 00:00:00',
+                                                        'DD/MM/YYYY HH24:MI:SS'))) <
+                               
+                               (SELECT (TO_NUMBER(SUBSTR(DB_EDILD_NOMEARQ,
+                                                          39,
+                                                          6)))
+                                   FROM mercanet_prd.DB_EDI_LOTE_DISTR EDILD
+                                  WHERE EDILD.DB_EDILD_SEQ = EPD.DB_EDIP_LOTE)) THEN
+                           'NAO FINALIZADA'
+                          ELSE
+                           CASE
+                             WHEN ((SELECT distinct (COUNT(*))
+                                      FROM mercanet_prd.DB_EDI_PEDIDO  EDIP,
+                                           mercanet_prd.DB_EDI_PEDPROD EDII
+                                     WHERE EDIP.DB_EDIP_COMPRADOR =
+                                           EDII.DB_EDII_COMPRADOR
+                                       AND EDIP.DB_EDIP_NRO = EDII.DB_EDII_NRO
+                                       AND EDIP.DB_EDIP_LOTE = EPD.DB_EDIP_LOTE
+                                          --AND EDIP.DB_EDIP_DTENVIO is null
+                                       AND NOT EXISTS
+                                     (SELECT *
+                                              FROM mercanet_prd.DB_EDI_PEDIDO EDIP2
+                                             WHERE EDIP.DB_EDIP_DTENVIO =
+                                                   TO_DATE('31/12/9999 00:00:00',
+                                                           'DD/MM/YYYY HH24:MI:SS'))) =
+                                  
+                                  (SELECT (TO_NUMBER(SUBSTR(DB_EDILD_NOMEARQ,
+                                                             39,
+                                                             6)))
+                                      FROM mercanet_prd.DB_EDI_LOTE_DISTR EDILD
+                                     WHERE EDILD.DB_EDILD_SEQ = EPD.DB_EDIP_LOTE)) THEN
+                              'OK - FINALIZADO'
+                             ELSE
+                              'NAO INICIADA'
+                           END
+                        END
+                   FROM mercanet_prd.DB_EDI_LOTE_DISTR EDILD
+                  WHERE EDILD.DB_EDILD_SEQ = EPD.DB_EDIP_LOTE) "CONSISTENCIA",
+                
+                (SELECT trunc(((max(DB_PEDT_DTCOLET) - max(DB_EDILD_DATA)) *
+                              86400 / 3600)) || ':' ||
+                        trunc(mod((max(DB_PEDT_DTCOLET) - max(DB_EDILD_DATA)) *
+                                  86400,
+                                  3600) / 60) || ':' ||
+                        trunc(mod(mod((max(DB_PEDT_DTCOLET) -
+                                      max(DB_EDILD_DATA)) * 86400,
+                                      3600),
+                                  60))
+                   FROM mercanet_prd.DB_PEDIDO_DISTR     A,
+                        mercanet_prd.DB_EDI_PEDIDO       B,
+                        mercanet_prd.DB_PEDIDO           C,
+                        mercanet_prd.INTERFACE_DB_PEDIDO D,
+                        mercanet_prd.DB_EDI_LOTE_DISTR   E
+                  WHERE B.DB_EDIP_PEDMERC = A.DB_PEDT_PEDIDO(+)
+                    AND A.DB_PEDT_PEDIDO = C.DB_PED_NRO(+)
+                    AND C.DB_PED_NRO = D.DB_PED_NRO(+)
+                    AND E.DB_EDILD_SEQ = B.DB_EDIP_LOTE
+                    AND DB_EDIP_LOTE = EPD.DB_EDIP_LOTE) as "TEMPO DE IMPORTAÇÃO"
+  FROM mercanet_prd.DB_EDI_LOTE_DISTR ELD,
+       mercanet_prd.DB_EDI_PEDIDO     EPD,
+       mercanet_prd.DB_EDI_PEDPROD    EPP
+ WHERE DB_EDIP_VAN = 508
+   AND DB_EDIP_LOTE = DB_EDILD_SEQ
+   AND DB_EDIP_COMPRADOR = DB_EDII_COMPRADOR
+   AND DB_EDIP_NRO = DB_EDII_NRO
+   AND EPD.DB_EDIP_OBS1 IN ('006854') --informe OS ARQUIVOS
+ GROUP BY ELD.DB_EDILD_NOMEARQ,
+          EPD.DB_EDIP_COMPRADOR,
+          EPD.DB_EDIP_NRO,
+          EPD.DB_EDIP_LOTE,
+          ELD.DB_EDILD_SEQ
+ ORDER BY DB_EDIP_LOTE

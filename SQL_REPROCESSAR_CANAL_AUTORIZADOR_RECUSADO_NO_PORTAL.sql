@@ -1,0 +1,75 @@
+UPDATE PRODDTA.F554201C
+SET CHUK01 = 0,
+    CHDL011 = '',
+    CHEV01 = 'P',
+    CHEV02 = ' ',
+    CHCDT = 0,
+    CHCRTM = 0
+WHERE CHUKID IN (); 
+
+UPDATE PRODDTA.F554201I
+SET IHUK01 = 0,
+    IHDL011 = '',
+    IHEV01 = 'P',
+    IHEV02 = ' ',
+    IHCDT = 0,
+    IHCRTM = 0
+WHERE IHUKID IN ();
+     
+UPDATE PRODDTA.F554211C
+  SET CDEV01  = 'P',
+      CDEV02  = ' ',
+      CDDL011 = ' ', 
+      CDQ100  = ' '    
+ WHERE CDUKID IN ();
+
+UPDATE PRODDTA.F554211I
+  SET IDEV01  = 'P',
+      IDEV02  = ' ',      
+      IDDL011 = ' ', 
+      IDQ100  = ' '    
+ WHERE IDUKID IN ();
+ 
+ /*
+ UPDATE PRODDTA.F554211C
+SET CDFLAG = (SELECT DECODE(SDSRP3,'NEG','N','POS','P','0')
+                FROM (SELECT * 
+                        FROM PRODDTA.F42119 
+                      UNION ALL 
+                      SELECT * 
+                        FROM PRODDTA.F4211)          
+               WHERE SDDOCO = CDDOCO 
+                 AND SDDCTO = CDDCTO 
+                 AND SDLITM = CDLITM
+                 AND ROWNUM = 1),
+    CDSRP8 = (SELECT DECODE(TRIM(IBSRP8), 'C', 'M', 'P', 'L', IBSRP8) 
+                FROM PRODDTA.F4102 WHERE IBLITM = CDLITM AND ROWNUM = 1)
+WHERE CDUKID IN (171566,182942,190152,190768,190770,190772,190775,190778,190780);
+
+ UPDATE PRODDTA.F554211I
+SET IDFLAG = (SELECT DECODE(SDSRP3,'NEG','N','POS','P','0')
+                FROM (SELECT * 
+                        FROM PRODDTA.F42119 
+                      UNION ALL 
+                      SELECT * 
+                        FROM PRODDTA.F4211)          
+               WHERE SDDOCO = IDDOCO 
+                 AND SDDCTO = IDDCTO 
+                 AND SDLITM = IDLITM
+                 AND ROWNUM = 1),
+    IDSRP8 = (SELECT DECODE(TRIM(IBSRP8), 'C', 'M', 'P', 'L', IBSRP8) 
+                FROM PRODDTA.F4102 WHERE IBLITM =IDLITM AND ROWNUM = 1)
+WHERE IDUKID IN (171566,182942,190152,190768,190770,190772,190775,190778,190780);
+*/
+
+/*
+
+SELECT * FROM PRODDTA.F554201C 
+ WHERE CHUKID IN (588364,589621,591342,590551,592274,592237,593555,594764,593877,595012 );
+ 
+SELECT * FROM PRODDTA.F554201I 
+ WHERE IHUKID IN (588364,589621,591342,590551,592274,592237,593555,594764,593877,595012 );
+ 
+ 
+ */
+ 

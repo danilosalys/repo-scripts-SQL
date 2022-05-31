@@ -1,0 +1,16 @@
+SELECT SAVR01,
+       SAUKID,
+       SDDOCO,
+       SDLITM,
+       SDDSC1,
+       SDDCTO,
+       SDPRP5,
+       SDSHCN,
+       SDLOTN,
+       SDNXTR, 
+       SDLTTR
+  FROM crpDTA.F4211 A, crpDTA.F5547011 B
+ WHERE SADOCO = SDDOCO
+   AND SAOORN = 'MERCANET'
+   AND SDDCTO = 'ZL'
+   AND SAVR01 IN ('') -- LISTA DE PEDIDOS MERCANET

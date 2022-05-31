@@ -1,0 +1,15 @@
+
+SELECT  distinct  SDDOCO,SDLTTR,SDNXTR,SDDCTO,sdoorn,SDLNTY,sdan8,abalph,
+                  SDZON,SDEMCU,sdmcu,SDDCT,SDDOC,SDURAT,SDURAB,SHHOLD,sdlitm, 
+                  sdlnid,SDUORG,SDSOQS,SDLOCN,SDLOTN
+  FROM CRPDTA.F4211, CRPDTA.F4201, CRPDTA.F0101
+ WHERE SDDOCO = SHDOCO
+   and aban8 = sdan8
+   and aban8 = shan8  
+   and sddoco in (96975,96977,96978,96979,96981,96982,96983,96985,96986,96987,96988,96990,96991,96992,96993)
+   --AND SHHOLD = ' '
+   and sdlttr NOT IN ('980', '982')
+   AND SDLNTY in  ('BS','')   
+  --ORDER BY SDDOCO  DESC , SDLTTR , sdlnid --SDOORN , SDLITM 
+
+ 

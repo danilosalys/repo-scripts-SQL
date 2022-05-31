@@ -1,0 +1,17 @@
+SELECT MAX (CASE
+         WHEN (SELECT COUNT(*)
+                 FROM DB_NOTA_FISCAL
+                WHERE DB_NOTA_PED_ORIG = 90854) > 1 
+         THEN
+          (SELECT DB_NOTA_NRO
+             FROM DB_NOTA_FISCAL
+            WHERE DB_NOTA_PED_ORIG = 90854
+              AND DB_NOTA_TIPODOC = 'OL')
+         ELSE
+          (SELECT DB_NOTA_NRO
+             FROM DB_NOTA_FISCAL
+            WHERE DB_NOTA_PED_ORIG = 90854)
+       END) 
+  FROM DB_PEDIDO, DB_NOTA_FISCAL
+  WHERE DB_NOTA_PED_ORIG = DB_PED_NRO_ORIG
+  

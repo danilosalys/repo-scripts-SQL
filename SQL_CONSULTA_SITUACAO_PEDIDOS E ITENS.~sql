@@ -1,0 +1,61 @@
+
+
+--QUERY RETORNA A SITUAÇAO DOS PEDIDOS QUE FORAM RETORNADOS DO JDE 
+
+SELECT DISTINCT DB_PED_SITUACAO,
+                CASE
+                  WHEN DB_PED_SITUACAO = 0 THEN
+                   'LIBERADO'
+                  ELSE
+                   CASE
+                  WHEN DB_PED_SITUACAO = 1 THEN
+                   'BLOQUEADO'
+                  ELSE
+                   CASE
+                  WHEN DB_PED_SITUACAO = 2 THEN
+                   'FATURADO PARCIAL'
+                  ELSE
+                   'CANCELADO'
+                END END END PED_SITUACAO,
+                DB_PED_SITCORP,
+                CASE
+                  WHEN DB_PED_SITCORP = 0 THEN
+                   'LIBERADO'
+                  ELSE
+                   CASE
+                  WHEN DB_PED_SITCORP = 1 THEN
+                   'BLOQUEADO MN'
+                  ELSE
+                   CASE
+                  WHEN DB_PED_SITCORP = 2 THEN
+                   'BLOQUEADO C2'
+                  ELSE
+                   CASE
+                  WHEN DB_PED_SITCORP = 3 THEN
+                   'FATURADO PARCIAL'
+                  ELSE
+                   CASE
+                  WHEN DB_PED_SITCORP = 5 THEN
+                   'CANCEL BLOQ DO CLIENTE'
+                  ELSE
+                   'CANCELADO'
+                END END END END END SITCORP,
+                DB_PEDI_SITUACAO,
+                CASE
+                  WHEN DB_PEDI_SITUACAO = 0 THEN
+                   'LIBERADO'
+                  ELSE
+                   CASE
+                  WHEN DB_PEDI_SITUACAO = 1 THEN
+                   'FATURADO PARCIAL'
+                  ELSE
+                   CASE
+                  WHEN DB_PEDI_SITUACAO = 2 THEN
+                   'FATURADO'
+                  ELSE
+                   'CANCELADO'
+                END END END PEDI_SITUACAO
+  FROM DB_PEDIDO, DB_PEDIDO_PROD
+ WHERE DB_PED_NRO = DB_PEDI_PEDIDO
+   AND DB_PED_SITCORP != 333
+   AND DB_PED_NRO = 80052949

@@ -1,0 +1,187 @@
+--VERIFICANDO SE PROCESSOU TODAS DAS LINHAS
+
+SELECT DISTINCT (SELECT MAX(TO_NUMBER(SUBSTR(DB_EDILD_NOMEARQ, 39, 6)))
+                   FROM MERCANET_PRD.DB_EDI_LOTE_DISTR EDILD
+                  WHERE EDILD.DB_EDILD_SEQ = EPD.DB_EDIP_LOTE) "TOTAL LINHAS DO ARQUIVO",
+                
+                EPD.DB_EDIP_LOTE,
+                
+                ELD.DB_EDILD_NOMEARQ,
+                
+                (SELECT distinct (COUNT(*))
+                   FROM MERCANET_PRD.DB_EDI_PEDIDO  EDIP,
+                        MERCANET_PRD.DB_EDI_PEDPROD EDII
+                  WHERE EDIP.DB_EDIP_COMPRADOR = EDII.DB_EDII_COMPRADOR
+                    AND EDIP.DB_EDIP_NRO = EDII.DB_EDII_NRO
+                    AND EDIP.DB_EDIP_LOTE = EPD.DB_EDIP_LOTE
+                    AND EDIP.DB_EDIP_DTENVIO >
+                        (TO_DATE('24/10/2012 00:00:00',
+                                 'DD/MM/YYYY HH24:MI:SS')) --INSERIR DATA DO RETORNO
+                    AND EDIP.DB_EDIP_DTENVIO <
+                        (TO_DATE('24/10/2012 23:59:00',
+                                 'DD/MM/YYYY HH24:MI:SS')) +
+                        (SELECT distinct (COUNT(*))
+                           FROM MERCANET_PRD.DB_EDI_PEDIDO  EDIP,
+                                MERCANET_PRD.DB_EDI_PEDPROD EDII
+                          WHERE EDIP.DB_EDIP_COMPRADOR =
+                                EDII.DB_EDII_COMPRADOR
+                            AND EDIP.DB_EDIP_NRO = EDII.DB_EDII_NRO
+                            AND EDIP.DB_EDIP_LOTE = EPD.DB_EDIP_LOTE
+                            AND EDIP.DB_EDIP_DTENVIO is null)) "TOTAL CONSISTIDO(LINHAS)",
+                
+                (SELECT (COUNT(*))
+                   FROM MERCANET_PRD.DB_EDI_PEDIDO  EDIP,
+                        MERCANET_PRD.DB_EDI_PEDPROD EDII
+                  WHERE EDIP.DB_EDIP_COMPRADOR = EDII.DB_EDII_COMPRADOR
+                    AND EDIP.DB_EDIP_NRO = EDII.DB_EDII_NRO
+                    AND EDIP.DB_EDIP_LOTE = EPD.DB_EDIP_LOTE
+                    AND EDIP.DB_EDIP_DTENVIO =
+                        TO_DATE('31/12/9999 00:00:00',
+                                'DD/MM/YYYY HH24:MI:SS')) "FALTA CONSISTIR (LINHAS)",
+                
+                (SELECT COUNT(EDIP.DB_EDIP_NRO)
+                   FROM MERCANET_PRD.DB_EDI_PEDIDO EDIP
+                  WHERE EDIP.DB_EDIP_LOTE = EPD.DB_EDIP_LOTE
+                    AND EDIP.DB_EDIP_DTENVIO IS NULL) "EDIP_NRO GERADOS",
+                
+                (SELECT CASE
+                          WHEN ((SELECT distinct (COUNT(*))
+                   FROM MERCANET_PRD.DB_EDI_PEDIDO  EDIP,
+                        MERCANET_PRD.DB_EDI_PEDPROD EDII
+                  WHERE EDIP.DB_EDIP_COMPRADOR = EDII.DB_EDII_COMPRADOR
+                    AND EDIP.DB_EDIP_NRO = EDII.DB_EDII_NRO
+                    AND EDIP.DB_EDIP_LOTE = EPD.DB_EDIP_LOTE
+                    AND EDIP.DB_EDIP_DTENVIO >
+                        (TO_DATE('24/10/2012 00:00:00',
+                                 'DD/MM/YYYY HH24:MI:SS')) --INSERIR DATA DO RETORNO
+                    AND EDIP.DB_EDIP_DTENVIO <
+                        (TO_DATE('24/10/2012 23:59:00',
+                                 'DD/MM/YYYY HH24:MI:SS')) +
+                        (SELECT distinct (COUNT(*))
+                           FROM MERCANET_PRD.DB_EDI_PEDIDO  EDIP,
+                                MERCANET_PRD.DB_EDI_PEDPROD EDII
+                          WHERE EDIP.DB_EDIP_COMPRADOR =
+                                EDII.DB_EDII_COMPRADOR
+                            AND EDIP.DB_EDIP_NRO = EDII.DB_EDII_NRO
+                            AND EDIP.DB_EDIP_LOTE = EPD.DB_EDIP_LOTE
+                            AND EDIP.DB_EDIP_DTENVIO is null)) <
+                               
+                               (SELECT (TO_NUMBER(SUBSTR(DB_EDILD_NOMEARQ,
+                                                          39,
+                                                          6)))
+                                   FROM MERCANET_PRD.DB_EDI_LOTE_DISTR EDILD
+                                  WHERE EDILD.DB_EDILD_SEQ = EPD.DB_EDIP_LOTE)) THEN
+                           'NAO FINALIZADA'
+                          ELSE
+                           CASE
+                             WHEN ((SELECT distinct (COUNT(*))
+                   FROM MERCANET_PRD.DB_EDI_PEDIDO  EDIP,
+                        MERCANET_PRD.DB_EDI_PEDPROD EDII
+                  WHERE EDIP.DB_EDIP_COMPRADOR = EDII.DB_EDII_COMPRADOR
+                    AND EDIP.DB_EDIP_NRO = EDII.DB_EDII_NRO
+                    AND EDIP.DB_EDIP_LOTE = EPD.DB_EDIP_LOTE
+                    AND EDIP.DB_EDIP_DTENVIO >
+                        (TO_DATE('24/10/2012 00:00:00',
+                                 'DD/MM/YYYY HH24:MI:SS')) --INSERIR DATA DO RETORNO
+                    AND EDIP.DB_EDIP_DTENVIO <
+                        (TO_DATE('24/10/2012 23:59:00',
+                                 'DD/MM/YYYY HH24:MI:SS')) +
+                        (SELECT distinct (COUNT(*))
+                           FROM MERCANET_PRD.DB_EDI_PEDIDO  EDIP,
+                                MERCANET_PRD.DB_EDI_PEDPROD EDII
+                          WHERE EDIP.DB_EDIP_COMPRADOR =
+                                EDII.DB_EDII_COMPRADOR
+                            AND EDIP.DB_EDIP_NRO = EDII.DB_EDII_NRO
+                            AND EDIP.DB_EDIP_LOTE = EPD.DB_EDIP_LOTE
+                            AND EDIP.DB_EDIP_DTENVIO is null)) =
+                                  
+                                  (SELECT (TO_NUMBER(SUBSTR(DB_EDILD_NOMEARQ,
+                                                             39,
+                                                             6)))
+                                      FROM MERCANET_PRD.DB_EDI_LOTE_DISTR EDILD
+                                     WHERE EDILD.DB_EDILD_SEQ = EPD.DB_EDIP_LOTE)) THEN
+                              'OK - FINALIZADO'
+                             ELSE
+                              'NAO INICIADA'
+                           END
+                        END
+                   FROM MERCANET_PRD.DB_EDI_LOTE_DISTR EDILD
+                  WHERE EDILD.DB_EDILD_SEQ = EPD.DB_EDIP_LOTE) "CONSISTENCIA"
+
+  FROM MERCANET_PRD.DB_EDI_LOTE_DISTR ELD,
+       MERCANET_PRD.DB_EDI_PEDIDO     EPD,
+       MERCANET_PRD.DB_EDI_PEDPROD    EPP
+ WHERE DB_EDIP_VAN = 508
+   AND DB_EDIP_LOTE = DB_EDILD_SEQ
+   AND DB_EDIP_COMPRADOR = DB_EDII_COMPRADOR
+   AND DB_EDIP_NRO = DB_EDII_NRO
+   AND EPD.DB_EDIP_LOTE IN (678208,678209,678210,678213) --INFORME OS LOTES
+-- AND ELD.DB_EDILD_NOMEARQ = 'SP00665505651966000960LGX201210241105_000116.S43'--= 678208 --informe OS ARQUIVOS
+ GROUP BY ELD.DB_EDILD_NOMEARQ,
+          EPD.DB_EDIP_COMPRADOR,
+          EPD.DB_EDIP_NRO,
+          EPD.DB_EDIP_LOTE,
+          ELD.DB_EDILD_SEQ
+ ORDER BY DB_EDIP_LOTE;
+
+--REPROCESSAR ARQUIVO
+--OBTER LINHAS PROCESSADAS
+DROP TABLE LINHA_PROCESSADA;
+CREATE TABLE LINHA_PROCESSADA(CNPJ VARCHAR2(14),
+                              EAN NUMBER(13),
+                              PROJETO VARCHAR2(2),
+                              QUANTIDADE VARCHAR2(4));
+ALTER TABLE LINHA_PROCESSADA ADD CONSTRAINT PK_LP PRIMARY KEY(CNPJ,
+                                                              EAN,
+                                                              PROJETO);
+
+INSERT INTO LINHA_PROCESSADA
+  SELECT DB_EDII_COMPRADOR,
+         DB_EDII_PRODUTO,
+         DB_EDII_PROJETO,
+         DB_EDII_QTDE_VDA
+    FROM MERCANET_PRD.DB_EDI_PEDIDO EDIP, MERCANET_PRD.DB_EDI_PEDPROD EDII
+   WHERE EDIP.DB_EDIP_COMPRADOR = EDII.DB_EDII_COMPRADOR
+     AND EDIP.DB_EDIP_NRO = EDII.DB_EDII_NRO
+     AND EDIP.DB_EDIP_LOTE IN (678213) --INSERIR LOTE
+     AND EDIP.DB_EDIP_DTENVIO IS NULL
+  UNION
+  SELECT DB_EDII_COMPRADOR,
+         DB_EDII_PRODUTO,
+         DB_EDII_PROJETO,
+         DB_EDII_QTDE_VDA
+    FROM MERCANET_PRD.DB_EDI_PEDIDO EDIP, MERCANET_PRD.DB_EDI_PEDPROD EDII
+   WHERE EDIP.DB_EDIP_COMPRADOR = EDII.DB_EDII_COMPRADOR
+     AND EDIP.DB_EDIP_NRO = EDII.DB_EDII_NRO
+     AND EDIP.DB_EDIP_LOTE IN (678213) --INSERIR LOTE
+     AND EDIP.DB_EDIP_DTENVIO >
+         (TO_DATE('24/10/2012 00:00:00', 'DD/MM/YYYY HH24:MI:SS')) --INSERIR DATA DO RETORNO
+     AND EDIP.DB_EDIP_DTENVIO <
+         (TO_DATE('24/10/2012 23:59:00', 'DD/MM/YYYY HH24:MI:SS'));
+COMMIT;
+
+--OBTER ARQUIVO COM TODAS AS LINHAS
+DROP TABLE PEDIDO_SEVENPDV;
+create table PEDIDO_SEVENPDV(CNPJ_PED VARCHAR2(14),
+                             EAN_PED NUMBER(13),
+                             PROJETO_PED VARCHAR2(2),
+                             QUANTIDADE_PED VARCHAR2(4),
+                             DESCONTO1_PED VARCHAR2(5),
+                             DESCONTO2_PED VARCHAR2(5),
+                             FIXO_PED VARCHAR2(1),
+                             CONDICAOPGTO_PED VARCHAR2(2),
+                             ORDEMCOMPRA_PED VARCHAR2(15));
+ALTER TABLE PEDIDO_SEVENPDV ADD CONSTRAINT PK_PS PRIMARY KEY(CNPJ_PED,
+                                                             EAN_PED,
+                                                             PROJETO_PED);
+
+SELECT * FROM PEDIDO_SEVENPDV FOR UPDATE; --INSERIR ARQUIVO DE PEDIDO (TABULAR NO EXCEL PRIMEIRO)
+
+--RETORNO LINHAS DO ARQUIVO DE PEDIDO NAO PROCESSADA (COPIAR O ARQUIVO PARA UM TXT E COLOCAR NA PASTA TRANSAÇAO)
+SELECT *
+  FROM PEDIDO_SEVENPDV
+ WHERE NOT EXISTS (SELECT *
+          FROM LINHA_PROCESSADA
+         WHERE CNPJ_PED = CNPJ
+           AND EAN_PED = EAN)
+ ORDER BY CNPJ_PED, EAN_PED

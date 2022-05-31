@@ -1,0 +1,45 @@
+select          cliente.db_cli_cidade                          as "Loja",
+                (edipedido.db_edip_comprador)                  as "Código do Cliente(CNPJ)",              
+                nvl(edipedido.db_edip_pedmerc,0)               as "Pedido Drogacenter",
+                edipedido.db_edip_nro                          as "Pedido Coop",
+                edipedprod.db_edii_valor1                      as "Sequencia do Item",
+                produto.db_prod_codigo                         as "Código Produto",
+                familia.db_tbfam_descricao                     as "Fornecedor", 
+                edipedprod.db_edii_produto                     as "Codigo de barras",
+                produto.db_prod_descricao                      as "Descrição Produto",
+                edipedprod.db_edii_qtde_vda                    as "Qtd solicitada",
+                nvl(pedidoprod.db_pedi_qtde_atend,0)           as "Qtd Atendida",
+                motivo.db_motr_descr                           as "Descr. Retorno",
+                edipedido.db_edip_dt_emissao                   as "Data Pedido",
+                nvl(pedidoprod.db_pedi_preco_liq,0)            as "Preço Liquido",
+                SUBSTR(TO_CHAR(lotedistr.db_edild_data,'DD/MM/YYYY HH24:MM:SS'),12,8) as "Hora cap",
+                case when edipedprod.db_edii_perc_dcto is null then 0 else edipedprod.db_edii_perc_dcto end   as "Perc Desconto", 
+                --Revisar o CASE pois deve ser enviado o desconto Comercial (Joice fara customização no integrator para trazer o valor para o laboratorio Aché da Most)
+                nvl(pedidoprod.db_pedi_preco_unit,0)           as "Preço fab"                
+  from mercanet_qa.db_edi_pedido      edipedido,
+       mercanet_qa.db_edi_pedprod     edipedprod,
+       mercanet_qa.db_edi_lote_distr  lotedistr,
+       mercanet_qa.db_pedido_distr_it pedidodistrit,
+       mercanet_qa.db_pedido_prod     pedidoprod,
+       mercanet_qa.db_cliente         cliente,
+       mercanet_qa.db_produto         produto,
+       mercanet_qa.db_produto_embal   produtoembal,
+       mercanet_qa.db_tb_familia      familia,
+       mercanet_qa.db_motivo_retdistr motivo
+ where edipedido.db_edip_comprador    = cliente.db_cli_cgcmf
+   and edipedido.db_edip_comprador    = edipedprod.db_edii_comprador
+   and edipedido.db_edip_nro          = edipedprod.db_edii_nro
+   and lotedistr.db_edild_seq         = edipedido.db_edip_lote
+   and edipedprod.db_edii_pedmerc     = pedidodistrit.db_pdit_pedido(+)
+   and edipedprod.db_edii_seq         = pedidodistrit.db_pdit_edii_seq(+)
+   and pedidodistrit.db_pdit_pedido   = pedidoprod.db_pedi_pedido(+)
+   and pedidodistrit.db_pdit_produto  = pedidoprod.db_pedi_produto(+)
+   and edipedprod.db_edii_produto     = produtoembal.db_prdemb_codbarra
+   and produtoembal.db_prdemb_produto = produto.db_prod_codigo  
+   and produto.db_prod_familia        = familia.db_tbfam_codigo
+   and edipedprod.db_edii_motivoret   = motivo.db_motr_codigo
+   and lotedistr.db_edild_distr = 532
+   and lotedistr.db_edild_data between
+       to_date('13/11/2012 00:00:00', 'dd/mm/yyyy hh24:mi:ss') and
+       to_date('13/11/2012 23:59:00', 'dd/mm/yyyy hh24:mi:ss')
+       

@@ -1,0 +1,35 @@
+SELECT DISTINCT db_edip_lote, 
+                db_edip_pedmerc,
+                db_edip_nro,
+                db_edip_van,               
+                SDDOCO,
+                SDLTTR,
+                SDNXTR,
+                SDDCTO,
+                sdoorn,
+                SDLNTY,
+                sdan8,
+                abalph,
+                SDZON,
+                SDEMCU,
+                sdmcu,
+                SDDCT,
+                SDDOC,
+                SDURAT,
+                SDURAB,
+                SHHOLD,
+                sdlitm
+  FROM qadta.F4211, qadta.F4201, qadta.F0101 , mercanet_qa.db_edi_pedido@dc09
+ WHERE SDDOCO = SHDOCO
+   AND SDDCTO = SHDCTO
+   AND shoorn = to_char(db_edip_pedmerc)
+   and aban8 = sdan8
+   and aban8 = shan8  
+   and shoorn in ('80063613','80063614','80063615','80063616','80063642','80063643','80063644','80063645','80063646',
+                 '80063647','80063648','80063649','80063650','80063651','80063652','80063653','80063654','80063655',
+                 '80063656','80063657','80063661','80063662','80063663','80063664','80063665','80063666','80063667','80063668')
+   --AND SHHOLD = ' '
+   --and sdlttr NOT IN ('980', '982')
+   AND SDLNTY in  ('BS',')'
+
+
