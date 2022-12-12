@@ -1,0 +1,351 @@
+set feedback off
+set echo off
+set trimspool on
+set termout off
+set serveroutput on size 2048000 format wrapped
+set lines 2048000
+set pages 0
+
+-- CRIA O ARQUIVO BAT PARA SER EXECUTO POSTERIORMENTE
+spool C:\temp\PHL_PedidoReverso.BAT
+
+DECLARE
+
+  header1           varchar2(1000);
+  header2           varchar2(1000);
+  header3           varchar2(1000);
+  header4           varchar2(1000);
+  itens             varchar2(1000);
+  trailer           varchar2(1000);
+  nome_arquivo      varchar2(200);
+  diretorio         varchar2(100) := '&Diretório';
+  hora_nome_arquivo varchar2(20);
+
+BEGIN
+
+  FOR NOTAS_NOVEMBRO IN (SELECT *
+                           FROM DSALES.NOTAS_PEDIDO_REVERSO
+                          WHERE QTDE_ITENS > 6 ) LOOP
+    FOR NOTA IN (SELECT '01' AS tipoLinha_101
+                        ,'221' AS verLayout_102
+                        ,LPAD(T4.FHBNNF, 9, '0') AS numeroNF_103
+                        ,LPAD(T4.FHBSER, 3, '0') AS serieNF_104
+                        ,'01' AS tipoNF_105
+                        ,'0000' AS codigoPrazoDeterminado_106
+                        ,'01' AS qtdeNFPedido_107
+                        ,TRIM(T4.FHBCGT) AS cnpjPedido_108
+                        ,TRIM(T4.FHBCGT) AS cnpjEntrega_109
+                        ,TRIM(T4.FHBCGF) AS cnpjDistribuidor_110
+                        ,MAX(NVL((SELECT TRIM(MAX(CIAA10))
+                              FROM PRODDTA.F5542095
+                             WHERE CIPUKID = CCPUKID
+                               AND CIUKID = CCUKID),
+                            '0014')) AS controleProjeto_111
+                        ,MAX(NVL((SELECT MAX(T2.DRDL02)
+                              FROM PRODDTA.F5542095 T1, PRODDTA.F0005 T2
+                             WHERE CIPUKID = CCPUKID
+                               AND CIUKID = CCUKID
+                               AND T2.DRSY = '57'
+                               AND T2.DRRT = 'CP'
+                               AND TRIM(T2.DRKY) = TRIM(CIAA10)),
+                            149)) AS codigoProjeto_112
+                        ,'0000000000' AS numeroPedidoPharmaLink_113
+                        ,LPAD(T3.FDDOCO, 15, '0') AS numeroPedidoCliente_114
+                        ,LPAD(T5.NEBBRCD, 50, '0') AS Chave_NFE_115
+                        ,'00' AS fillerLinha1_116
+                        ,'-----------------------------------------------------'
+                        ,'02' AS tipoLinha_201
+                        ,TO_CHAR(TO_DATE(TO_CHAR(T6.DDDDJ + 1900000),
+                                        'YYYYDDD'),
+                                'DDMMYYYY') AS dtFaturamento_202
+                        ,TO_CHAR(TO_DATE(TO_CHAR(T4.FHISSU + 1900000),
+                                        'YYYYDDD'),
+                                'DDMMYYYY') AS dtGerNF_203
+                        ,SUBSTR(T7.EHDETM,1,4) AS hrGerNF_204
+                        ,TO_CHAR(TO_DATE(TO_CHAR(T4.FHISSU + 1900000),
+                                        'YYYYDDD'),
+                                'DDMMYYYY') AS dtSaidaMerc_205
+                        ,'0000' AS hrSaidaMerc_206
+                        ,TO_CHAR(TO_DATE(TO_CHAR(T4.FHISSU + 1900000),
+                                        'YYYYDDD'),
+                                'DDMMYYYY') AS dtEmissNF_207
+                        ,SUBSTR(T7.EHDETM,1,4) AS hrEmissNF_208
+                        ,LPAD(SUM(((T2.SDLPRC/10000) * T3.FDUORG)*100), 8, '0')  AS valorTotal_209 --T7.EHAN01 AS valorTotal_209 --> ALTERAR FUNCIONAL
+                        ,LPAD(SUM(ABS(CCAN01) * T3.FDUORG), 8, '0') AS valorTotalDesc_210        --T7.EHAN02 AS valorTotalDesc_210 --> ALTERAR FUNCIONAL
+                        ,LPAD(SUM(T3.FDAEXP), 8, '0') AS valorTotalLiq_211 --SOMATORIA DOS DETALHES
+                        ,'00000000' AS valorTotalEncarg_212
+                        ,'00000000' AS valorTotalFrete_213
+                        ,LPAD(T4.FHBBCL,8,'0') AS valorBaseICMS_214
+                        ,LPAD(T4.FHBICM,8,'0') AS valorTotalBaseICMS_215
+                        ,LPAD(T4.FHBBIS,8,'0') AS valorBaseICMS_ST_216
+                        ,LPAD(T4.FHBVTN,8,'0') AS valorTotalBaseICMS_ST_217
+                        ,LPAD(T4.FHBBCL,8,'0') AS valorBaseICMS_RT_218
+                        ,LPAD(T4.FHBVTN,8,'0') AS valorTotalBaseICMS_RT_219
+                        ,LPAD(T4.FHBBTP,8,'0') AS valorBaseIPI_220
+                        ,LPAD(T4.FHBIPI,8,'0') AS valor_Total_IPI_221
+                        ,'0' AS fillerlinha2_222
+                        ,'04' AS tipoLinha_401
+                        ,LPAD(COUNT(T3.FDLITM),5,'0')  AS qtdeItens_402
+                        ,LPAD(SUM(T3.FDUORG),15,'0') AS qtdeUnidFaturadas_403
+                        ,LPAD('0',129,'0') AS fillerlinha4_404
+                   FROM PRODDTA.F5542099 T1,
+                        PRODDTA.F42119   T2,
+                        PRODDTA.F7611B   T3,
+                        PRODDTA.F7601B   T4,
+                        PRODDTA.F55NFE03 T5,
+                        PRODDTA.F557614B T6,
+                        PRODDTA.F555501  T7
+                  WHERE T1.CCUKID IN (175537, 181350)
+                    AND T1.CCDOCO = T2.SDDOCO
+                    AND T1.CCLNID = T2.SDLNID
+                    AND T1.CCKCOO = T2.SDKCOO
+                    AND T2.SDTRDJ >= 122305
+                    AND T2.SDTRDJ <= 122334
+                    AND T2.SDLTTR NOT BETWEEN '980' AND '989'
+                    AND T2.SDLTTR <= '620'
+                    AND T2.SDDOCO = T3.FDDOCO
+                    AND T2.SDKCOO = T3.FDKCOO
+                    AND T2.SDLNID = T3.FDLNID
+                    AND T2.SDDCTO = T3.FDPDCT
+                    AND T3.FDBNNF = T4.FHBNNF
+                    AND T3.FDBSER = T4.FHBSER
+                    AND T3.FDN001 = T4.FHN001
+                    AND T3.FDDCT = T4.FHDCT
+                    AND T3.FDDOCO = T5.NEDOCO
+                    AND T3.FDBNNF = T5.NEBNNF
+                    AND T3.FDBSER = T5.NEBSER
+                    AND T3.FDN001 = T5.NEN001
+                    AND T3.FDPDCT = T5.NEDCTO
+                    AND T4.FHBNNF = T6.DDBNNF
+                    AND T4.FHBSER = T6.DDBSER
+                    AND T4.FHN001 = T6.DDN001
+                    AND T4.FHDCT = T6.DDDCT
+                    AND T4.FHBNNF = T7.EHBNNF
+                    AND T4.FHBSER = T7.EHBSER
+                    AND T4.FHN001 = T7.EHN001
+                    AND T4.FHDCT = T7.EHDCT
+                    AND T4.FHBNNF = NOTAS_NOVEMBRO.FHBNNF
+                    AND T4.FHBSER = NOTAS_NOVEMBRO.FHBSER
+                    AND T5.NEBBRCD = NOTAS_NOVEMBRO.NEBBRCD
+                  GROUP BY T6.DDDDJ,
+                           T4.FHBNNF,
+                           T4.FHBSER,
+                           T4.FHBCGT,
+                           T4.FHBCGF,
+                           T3.FDDOCO,
+                           T5.NEBBRCD,
+                           T4.FHISSU,
+                           T7.EHDETM,
+                           T7.EHAN01,
+                           T7.EHAN02,
+                           T4.FHBVTN,
+                           T4.FHBBCL,
+                           T4.FHBICM,
+                           T4.FHBBIS,
+                           T4.FHBBTP,
+                           T4.FHBIPI
+                  ORDER BY T4.FHBNNF, T4.FHBSER, T5.NEBBRCD) LOOP
+    
+      SELECT TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
+        INTO hora_nome_arquivo
+        FROM DUAL;
+    
+      nome_arquivo := 'PHL0014' 
+                      || NOTA.cnpjDistribuidor_110 
+                      || '_' 
+                      || hora_nome_arquivo 
+                      || '_' 
+                      || '0' 
+                      || NOTA.numeroNF_103 
+                      || '_REV.not.TEMP';
+    
+      header1 := 'echo ' 
+                 || NOTA.TIPOLINHA_101 
+                 || NOTA.VERLAYOUT_102 
+                 || NOTA.NUMERONF_103 
+                 || NOTA.SERIENF_104 
+                 || NOTA.TIPONF_105 
+                 || NOTA.CODIGOPRAZODETERMINADO_106 
+                 || NOTA.QTDENFPEDIDO_107 
+                 || NOTA.CNPJPEDIDO_108 
+                 || NOTA.CNPJENTREGA_109 
+                 || NOTA.CNPJDISTRIBUIDOR_110 
+                 || NOTA.CONTROLEPROJETO_111 
+                 || NOTA.CODIGOPROJETO_112 
+                 || NOTA.NUMEROPEDIDOPHARMALINK_113 
+                 || NOTA.NUMEROPEDIDOCLIENTE_114 
+                 || NOTA.CHAVE_NFE_115 
+                 ||NOTA.FILLERLINHA1_116
+                --INSERE CONTEUDO NO ARQUIVO JÁ NOMEADO
+                 || '>> ' 
+                 || nome_arquivo 
+                 || '';
+                 
+                 
+      header2 := 'echo ' 
+                 || NOTA.TIPOLINHA_201
+                 || NOTA.DTFATURAMENTO_202
+                 || NOTA.DTGERNF_203
+                 || NOTA.HRGERNF_204
+                 || NOTA.DTSAIDAMERC_205
+                 || NOTA.HRSAIDAMERC_206 
+                 || NOTA.DTEMISSNF_207 
+                 || NOTA.HREMISSNF_208 
+                 || NOTA.VALORTOTAL_209 
+                 || NOTA.VALORTOTALDESC_210 
+                 || NOTA.VALORTOTALLIQ_211 
+                 || NOTA.VALORTOTALENCARG_212 
+                 || NOTA.VALORTOTALFRETE_213 
+                 || NOTA.VALORBASEICMS_214 
+                 || NOTA.VALORTOTALBASEICMS_215 
+                 || NOTA.VALORBASEICMS_ST_216
+                 || NOTA.VALORTOTALBASEICMS_ST_217
+                 || NOTA.VALORBASEICMS_RT_218
+                 || NOTA.VALORTOTALBASEICMS_RT_219
+                 || NOTA.VALORBASEIPI_220
+                 || NOTA.VALOR_TOTAL_IPI_221
+                 || NOTA.FILLERLINHA2_222
+                --INSERE CONTEUDO NO ARQUIVO JÁ NOMEADO
+                 || '>> ' 
+                 || nome_arquivo 
+                 || '';
+    
+      dbms_output.put_line(header1); --IMPRIME O COMANDO NA TELA
+      dbms_output.put_line(header2); --IMPRIME O COMANDO NA TELA
+
+    
+      FOR Detail IN (SELECT '03'                                            AS tipoLinha_301
+                           ,LPAD(TRIM(T6.EDCITM),14,'0')                    AS ean_302
+                           ,LPAD('0',14,'0')                                AS codProdPLK_303
+                           ,LPAD(TRIM(T3.FDLITM),14,'0')                    AS codProdDist_304
+                           ,LPAD(T3.FDUORG,10,'0')                          AS quantidadeFaturada_305
+                           ,'UN '                                           AS tipoEmbalagem_306
+                           ,LPAD((CASE WHEN T1.CCCW01 < 0 
+                            THEN ABS(T1.CCCW01)/10000 
+                            ELSE CASE WHEN T1.CCCW03 < 0 
+                            THEN ABS(T1.CCCW03)/10000 
+                            ELSE CASE WHEN T1.CCCW05 < 0 
+                            THEN ABS(T1.CCCW05)/10000 
+                            ELSE 0 
+                            END END END)*100 ,5,'0')                        AS descontoComercial_307
+                           ,LPAD('0',5,'0')
+                           /*LPAD((SELECT NVL(SUM(X1.ALFVTR)/10000,0)
+                               FROM PRODDTA.F4074 X1  
+                              WHERE X1.ALDOCO = T3.FDDOCO
+                                AND X1.ALLNID = T3.FDLNID
+                                AND X1.ALACNT = '6'),5,'0')*/               AS descontoFinanceiro_308
+                           ,LPAD(NVL(ABS(T1.CCAN01),0),5,'0')
+                           /*LPAD(NVL(ABS(T1.CCAN01),0) + 
+                             (SELECT NVL(SUM(X1.ALFVTR)/10000,0)
+                               FROM PRODDTA.F4074 X1  
+                              WHERE X1.ALDOCO = T3.FDDOCO
+                                AND X1.ALLNID = T3.FDLNID
+                                AND X1.ALACNT = '6'),5,'0')*/               AS descontoTotal_309
+                           ,LPAD((T2.SDLPRC/10000)*100,8,'0')               AS valorBrutoUnit_310
+                           ,LPAD(ABS(T1.CCAN01),8,'0')                      AS valorDescontoUnit_311
+                           ,LPAD((T3.FDUPRC/10000)*100,8,'0')               AS valorLiquidoUnit_312
+                           ,LPAD(((T2.SDLPRC * T3.FDUORG)/10000)*100,8,'0') AS valorBrutoLinha_313
+                           ,LPAD(T3.FDAEXP,8,'0')                           AS valorLiquidoLinha_314
+                           ,'000'                                           AS motivo_315
+                           ,LPAD('0',36,'0')                                AS fillerLinha3_316
+                      FROM PRODDTA.F5542099 T1,
+                           PRODDTA.F42119   T2,
+                           PRODDTA.F7611B   T3,
+                           PRODDTA.F7601B   T4,
+                           PRODDTA.F55NFE03 T5,
+                           PRODDTA.F555511  T6
+                     WHERE T1.CCUKID IN (175537, 181350)
+                       AND T1.CCDOCO = T2.SDDOCO
+                       AND T1.CCLNID = T2.SDLNID
+                       AND T1.CCKCOO = T2.SDKCOO
+                       AND T2.SDTRDJ >= 122305
+                       AND T2.SDTRDJ <= 122334
+                       AND T2.SDLTTR NOT BETWEEN '980' AND '989'
+                       AND T2.SDLTTR <= '620'
+                       AND T2.SDDOCO = T3.FDDOCO
+                       AND T2.SDKCOO = T3.FDKCOO
+                       AND T2.SDLNID = T3.FDLNID
+                       AND T2.SDDCTO = T3.FDPDCT
+                       AND T3.FDBNNF = T4.FHBNNF
+                       AND T3.FDBSER = T4.FHBSER
+                       AND T3.FDN001 = T4.FHN001
+                       AND T3.FDDCT  = T4.FHDCT
+                       AND T3.FDDOCO = T5.NEDOCO
+                       AND T3.FDBNNF = T5.NEBNNF
+                       AND T3.FDBSER = T5.NEBSER
+                       AND T3.FDN001 = T5.NEN001
+                       AND T3.FDPDCT = T5.NEDCTO
+                       AND T3.FDBNNF = T6.EDBNNF
+                       AND T3.FDBSER = T6.EDBSER
+                       AND T3.FDN001 = T6.EDN001
+                       AND T3.FDDCT  = T6.EDDCT
+                       AND T3.FDLNID = T6.EDLNID 
+                       AND T4.FHBNNF = NOTAS_NOVEMBRO.FHBNNF
+                       AND T4.FHBSER = NOTAS_NOVEMBRO.FHBSER
+                       AND T5.NEBBRCD = NOTAS_NOVEMBRO.NEBBRCD
+                     ORDER BY T4.FHBNNF, T4.FHBSER, T5.NEBBRCD ) LOOP                    
+                    
+        itens := 'echo ' 
+                 || Detail.Tipolinha_301  
+                 || Detail.Ean_302 
+                 || Detail.Codprodplk_303
+                 || Detail.Codproddist_304
+                 || Detail.Quantidadefaturada_305
+                 || Detail.Tipoembalagem_306
+                 || Detail.Descontocomercial_307
+                 || Detail.Descontofinanceiro_308
+                 || Detail.Descontototal_309
+                 || Detail.Valorbrutounit_310
+                 || Detail.Valordescontounit_311
+                 || Detail.Valorliquidounit_312
+                 || Detail.Valorbrutolinha_313
+                 || Detail.Valorliquidolinha_314
+                 || Detail.Motivo_315
+                 || Detail.Fillerlinha3_316                 
+                --INSERE CONTEUDO NO ARQUIVO JÁ NOMEADO
+                 || '>> ' 
+                 || nome_arquivo 
+                 || '';
+                 
+                 
+         dbms_output.put_line(itens); 
+         
+         
+        
+      END LOOP;
+    
+      trailer := 'echo ' 
+                 || NOTA.TIPOLINHA_401
+                 || NOTA.qtdeItens_402
+                 || NOTA.qtdeUnidFaturadas_403
+                 || NOTA.fillerlinha4_404
+                --INSERE CONTEUDO NO ARQUIVO JÁ NOMEADO
+                 || '>> ' 
+                 || nome_arquivo 
+                 || '';
+      dbms_output.put_line(trailer); 
+        
+      dbms_output.put_line('MOVE ' 
+                           || nome_arquivo
+                           || ' ' 
+                           || diretorio); --MOVE ARQUIVO PARA DIRETORIO  
+                              
+     UPDATE DSALES.NOTAS_PEDIDO_REVERSO REV
+        SET REV.INTEGRACAO = 'Y'
+           ,REV.ARQUIVO = nome_arquivo
+       WHERE REV.FHBNNF = NOTAS_NOVEMBRO.FHBNNF 
+         AND REV.FHBSER = NOTAS_NOVEMBRO.FHBSER
+         AND REV.NEBBRCD = NOTAS_NOVEMBRO.NEBBRCD;
+     
+     COMMIT;    
+     
+    END LOOP;
+  END LOOP;
+  dbms_output.put_line('echo');
+
+END;
+
+/
+spool off;--TERMINA A GRAVACAO DO ARQUIVO BAT
+
+host C:\temp\PHL_PedidoReverso.BAT --ABRE O ARQUIVO BAT

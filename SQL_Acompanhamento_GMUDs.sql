@@ -113,7 +113,20 @@ select a.job as "Id Job",
   from dba_jobs a
  where a.schema_user = 'MERCANET_PRD'; -- Schema
 
+--Pedidos parados no Mercanet, não enviados ao JDE
 
+-- PEDIDOS NÃO ENVIADOS AO JDE 
+-- POSSIVEIS PROBLEMAS: 1) QUEBRA DE NUMERACAO DO UKID
+-- SE RETORNAR LINHAS, ANALISAR OS UKIDS DA TABELA DB_PARAMETRO1
+SELECT COUNT(1)
+  FROM MERCANET_PRD.DB_PEDIDO,
+       MERCANET_PRD.DB_EDI_PEDIDO,
+       MERCANET_PRD.DB_EDI_LOTE_DISTR
+ WHERE DB_PED_NRO = DB_EDIP_PEDMERC
+   AND DB_EDIP_LOTE = DB_EDILD_SEQ
+   AND DB_EDILD_DATA < SYSDATE - 0.01 
+   AND DB_PED_DATA_ENVIO IS NULL; 
+   
 --Pedidos parados no Mercanet, não enviados ao JDE
 
 -- PEDIDOS NÃO ENVIADOS AO JDE 
@@ -278,4 +291,13 @@ select dbs_erros_objeto objeto,
   from mercanet_prd.dbs_erros_triggers
 /*where dbs_erros_data between to_date('03/05/2017 00:00:00','dd/mm/yyyy hh24:mi:ss') and
 to_date('03/05/2017 23:59:00','dd/mm/yyyy hh24:mi:ss')*/
- group by dbs_erros_objeto
+ group by dbs_erros_objeto;
+ 
+  SELECT COUNT(1) FROM MERCANET_PRD.INTERFACE_DB_PRECO_PROD
+ WHERE DATA_INCLUSAO > 
+ to_date('03/09/2022 09;22','dd/mm/yyyy hh24:mi'); 
+ 
+
+
+
+ 
